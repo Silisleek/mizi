@@ -45,6 +45,7 @@ Supported provider types:
 | `/permission <mode>` | Set permission: `bypass` `accept-edits` `ask` `plan` |
 | `/config` | View configuration |
 | `/clear` | Clear conversation |
+| `/sessions` | Browse and load past sessions |
 | `/serve` | Launch web app |
 
 ## CLI Flags
