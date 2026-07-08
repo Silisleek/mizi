@@ -1,0 +1,111 @@
+#!/usr/bin/env node
+import { config } from '../lib/config.js';
+
+// ── Parse CLI flags ──
+const args = process.argv.slice(2);
+
+function getFlag(name) {
+  const i = args.indexOf(`--${name}`);
+  if (i === -1) return null;
+  if (i + 1 < args.length && !args[i + 1].startsWith('--')) return args[i + 1];
+  return true;
+}
+
+function hasFlag(name) { return args.includes(`--${name}`); }
+
+// Apply flag overrides before starting REPL
+const model = getFlag('model');
+if (model) config.set('model', model);
+
+const effort = getFlag('effort');
+if (effort) config.set('effort', effort);
+
+const perm = getFlag('permission');
+if (perm) config.set('permission', perm);
+
+const provider = getFlag('provider');
+if (provider) config.set('provider', provider);
+
+const reasoning = getFlag('reasoning');
+if (reasoning) config.set('reasoning', reasoning);
+
+// ── Subcommands ──
+const subcmd = args.find(a => !a.startsWith('-'));
+
+if (hasFlag('help') || hasFlag('h')) {
+  console.log(`
+  \x1b[1m\x1b[36m✦ MIZI CLI ✦\x1b[0m — AI coding assistant in your terminal
+
+  \x1b[1mUsage:\x1b[0m
+    mizi                      Start interactive REPL
+    mizi serve                Launch the web app (mizi.html)
+    mizi <prompt>             Single-shot prompt (non-interactive)
+
+  \x1b[1mFlags:\x1b[0m
+    --model <id>              Set model
+    --provider <id>           Set provider
+    --effort <level>          Set effort: instant/fast/normal/compact/power
+    --reasoning <level>       Set reasoning: low/medium/high/max
+    --permission <mode>       Set permission: bypass/accept-edits/ask/plan
+    --help, -h                Show this help
+`);
+  process.exit(0);
+}
+
+if (subcmd === 'serve') {
+  // Launch the web server
+  const { createServer } = await import('node:http');
+  const { readFile } = await import('node:fs/promises');
+  const { extname, resolve } = await import('node:path');
+  const { fileURLToPath } = await import('node:url');
+
+  const root = resolve(fileURLToPath(import.meta.url), '..', '..');
+  const MIME = {
+    '.html': 'text/html', '.js': 'text/javascript', '.json': 'application/json',
+    '.css': 'text/css', '.png': 'image/png', '.jpg': 'image/jpeg',
+    '.svg': 'image/svg+xml', '.ico': 'image/x-icon',
+  };
+
+  const htmlPath = resolve(root, 'mizi.html');
+  let html;
+  try { html = await readFile(htmlPath); }
+  catch (e) { console.error('Could not read mizi.html:', e.message); process.exit(1); }
+
+  const server = createServer(async (req, res) => {
+    const url = new URL(req.url || '/', 'http://localhost');
+    const filePath = resolve(root, url.pathname === '/' ? 'mizi.html' : url.pathname);
+    if (!filePath.startsWith(root)) { res.writeHead(403); res.end('Forbidden'); return; }
+    try {
+      const data = await readFile(filePath);
+      res.writeHead(200, { 'Content-Type': MIME[extname(filePath)] || 'application/octet-stream' });
+      res.end(data);
+    } catch {
+      res.writeHead(200, { 'Content-Type': 'text/html' });
+      res.end(html);
+    }
+  });
+
+  const START = 3000, END = 3010;
+  for (let port = START; port < END; port++) {
+    try {
+      await new Promise((ok, fail) => { server.once('error', fail); server.listen(port, '0.0.0.0', ok); });
+      console.log(`\n  \x1b[1m\x1b[36m✦ MIZI ✦\x1b[0m running at \x1b[4mhttp://localhost:${port}\x1b[0m\n`);
+      break;
+    } catch {
+      if (port === END - 1) { console.error('All ports 3000-3009 in use.'); process.exit(1); }
+    }
+  }
+} else if (subcmd && !subcmd.startsWith('-')) {
+  // Single-shot mode: non-interactive prompt
+  const { streamChat } = await import('../lib/ai.js');
+  const promptText = args.filter(a => !a.startsWith('--')).join(' ');
+  process.stdout.write('\n');
+  for await (const chunk of streamChat([{ role: 'user', content: promptText }])) {
+    process.stdout.write(chunk);
+  }
+  process.stdout.write('\n\n');
+} else {
+  // Default: interactive REPL
+  const { startREPL } = await import('../lib/repl.js');
+  startREPL();
+}

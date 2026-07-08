@@ -1,0 +1,24 @@
+{
+  "name": "mizi",
+  "version": "2.0.0",
+  "type": "module",
+  "description": "AI coding assistant CLI — like Claude Code but open. Chat, run commands, edit files.",
+  "main": "lib/repl.js",
+  "bin": {
+    "mizi": "bin/mizi"
+  },
+  "files": [
+    "bin",
+    "lib",
+    "mizi.html"
+  ],
+  "scripts": {
+    "build": "node build.js",
+    "dev:app": "npm run build && node --experimental-vm-modules node_modules/.bin/vite --config vite.config.js --port 5173 --open",
+    "dev:server": "node --experimental-vm-modules server.js",
+    "start": "node bin/mizi",
+    "serve": "node bin/mizi serve"
+  },
+  "keywords": ["cli", "mizi", "ai", "coding", "assistant"],
+  "license": "ISC"
+}
