@@ -1,6 +1,6 @@
 {
   "name": "@silisleek/mizi",
-  "version": "3.0.0",
+  "version": "3.1.0",
   "type": "module",
   "description": "AI coding assistant CLI — like Claude Code but open. Chat, run commands, edit files.",
   "main": "lib/repl.js",
