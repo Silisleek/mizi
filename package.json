@@ -1,6 +1,6 @@
 {
-  "name": "mizi",
-  "version": "2.0.0",
+  "name": "@silisleek/mizi",
+  "version": "2.1.0",
   "type": "module",
   "description": "AI coding assistant CLI — like Claude Code but open. Chat, run commands, edit files.",
   "main": "lib/repl.js",
@@ -19,6 +19,18 @@
     "start": "node bin/mizi",
     "serve": "node bin/mizi serve"
   },
-  "keywords": ["cli", "mizi", "ai", "coding", "assistant"],
-  "license": "ISC"
+  "keywords": [
+    "cli",
+    "mizi",
+    "ai",
+    "coding",
+    "assistant"
+  ],
+  "license": "ISC",
+  "dependencies": {
+    "@types/react": "^19.2.17",
+    "ink": "^7.1.0",
+    "ink-text-input": "^6.0.0",
+    "react": "^19.2.7"
+  }
 }

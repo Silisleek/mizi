@@ -105,7 +105,7 @@ if (subcmd === 'serve') {
   }
   process.stdout.write('\n\n');
 } else {
-  // Default: interactive REPL
-  const { startREPL } = await import('../lib/repl.js');
-  startREPL();
+  // Default: interactive TUI
+  const { startTUI } = await import('../lib/tui.js');
+  startTUI();
 }
